@@ -1,0 +1,4 @@
+[core]
+    remote = myremote
+['remote "myremote"']
+    url = C:\Users\praye\AppData\Local\Temp\prayesh-storage\
