@@ -1,4 +1,3 @@
-[core]
-    remote = myremote
-['remote "myremote"']
-    url = C:\Users\praye\AppData\Local\Temp\prayesh-storage\
+['remote "origin"']
+    url = s3://dvc
+    endpointurl = https://dagshub.com/Prayesh13/mlops-mini-project.s3
