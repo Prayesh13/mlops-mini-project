@@ -28,7 +28,9 @@ class TestModelLoading(unittest.TestCase):
         cls.model_uri = f"models:/{cls.model_name}/{cls.model_version}"
         cls.model = mlflow.pyfunc.load_model(cls.model_uri)
 
-        cls.vectorizer = pickle(open('models/vectorizer.pkl','rb'))
+        with open('models/vectorizer.pkl', 'rb') as f:
+            cls.vectorizer = pickle.load(f)
+
 
     @staticmethod
     def get_latest_model_version(model_name: str) -> int:
@@ -67,7 +69,7 @@ class TestModelLoading(unittest.TestCase):
         # verify the output shape
         self.assertEqual(len(predictions), input_df.shape[0])
         self.assertEqual(len(predictions.shape), 1)
-        
+
 
 if __name__ == '__main__':
     unittest.main()
