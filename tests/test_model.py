@@ -1,5 +1,7 @@
 import unittest
 import mlflow
+import pandas as pd
+import pickle
 import os
 
 class TestModelLoading(unittest.TestCase):
@@ -26,6 +28,8 @@ class TestModelLoading(unittest.TestCase):
         cls.model_uri = f"models:/{cls.model_name}/{cls.model_version}"
         cls.model = mlflow.pyfunc.load_model(cls.model_uri)
 
+        cls.vectorizer = pickle(open('models/vectorizer.pkl','rb'))
+
     @staticmethod
     def get_latest_model_version(model_name: str) -> int:
         """
@@ -45,10 +49,25 @@ class TestModelLoading(unittest.TestCase):
             latest = max(all_versions, key=lambda mv: int(mv.version))
             return int(latest.version)
 
-
     def test_model_loaded_properly(self):
         """Test if the model loads correctly."""
         self.assertIsNotNone(self.model, "Model should be loaded successfully")
+
+    def test_model_signature(self):
+        input_text = "hi how are you"
+        input_data = self.vectorizer.transform([input_text])
+        input_df = pd.DataFrame(input_data.toarray(), columns=[str(i) for i in range(input_data.shape[1])])
+
+        # Predict using the model
+        predictions = self.model.predict(input_df)
+
+        # Verify the input shape
+        self.assertEqual(input_df.shape[1], len(self.vectorizer.get_feature_names_out()))
+
+        # verify the output shape
+        self.assertEqual(len(predictions), input_df.shape[0])
+        self.assertEqual(len(predictions.shape), 1)
+        
 
 if __name__ == '__main__':
     unittest.main()
