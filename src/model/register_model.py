@@ -55,7 +55,7 @@ def load_model_info(file_path: str) -> dict:
 
 
 def register_model(model_name: str, model_info: dict):
-    """Register the model to the MLflow Model Registry using aliases instead of stages."""
+    """Register the model to the MLflow Model Registry using aliases instead of deprecated stages."""
     try:
         model_uri = f"runs:/{model_info['run_id']}/{model_info['model_path']}"
 
@@ -71,9 +71,8 @@ def register_model(model_name: str, model_info: dict):
         latest_version = int(model_version.version)
         previous_versions = [v for v in all_versions_sorted if int(v.version) < latest_version]
 
-        # Assign alias 'latest' to current version
-        client.set_registered_model_alias(model_name, "latest", latest_version)
-        logger.debug(f"Alias 'latest' set to version {latest_version}")
+        # Note: 'latest' is automatically handled by MLflow and cannot be set manually
+        logger.debug(f"'latest' alias is reserved by MLflow and is managed automatically.")
 
         # Optionally assign alias 'previous' to the previous version
         if previous_versions:
