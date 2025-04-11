@@ -1,10 +1,14 @@
 from flask import Flask, render_template, request
 import mlflow
 from mlflow.tracking import MlflowClient
-from preprocessing_utility import normalize_text
 import pandas as pd
 import pickle
 import os
+import sys
+
+# Add the parent directory to sys.path so Python can locate preprocessing_utility
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from preprocessing_utility import normalize_text
 
 def get_latest_model_version(model_name: str) -> int:
     """
