@@ -8,7 +8,7 @@ import sys
 
 # Add the parent directory to sys.path so Python can locate preprocessing_utility
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from preprocessing_utility import normalize_text
+from flask_app.preprocessing_utility import normalize_text
 
 def get_latest_model_version(model_name: str) -> int:
     """
