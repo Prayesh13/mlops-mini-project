@@ -71,16 +71,19 @@ def register_model(model_name: str, model_info: dict):
         latest_version = int(model_version.version)
         previous_versions = [v for v in all_versions_sorted if int(v.version) < latest_version]
 
-        # Note: 'latest' is automatically handled by MLflow and cannot be set manually
-        logger.debug(f"'latest' alias is reserved by MLflow and is managed automatically.")
+        # Assign alias 'latest' to current version
+        client.set_registered_model_alias(model_name, "latest", latest_version)
+        logger.debug(f"Alias 'latest' set to version {latest_version}")
 
-        # Optionally assign alias 'previous' to the previous version
+        # Assign alias 'previous{version}' to the most recent previous version
         if previous_versions:
             previous_version = int(previous_versions[0].version)
-            client.set_registered_model_alias(model_name, "previous", previous_version)
-            logger.debug(f"Alias 'previous' set to version {previous_version}")
+            alias_name = f"previous{previous_version}"
+            client.set_registered_model_alias(model_name, alias_name, previous_version)
+            logger.debug(f"Alias '{alias_name}' set to version {previous_version}")
 
-        logger.debug(f"Model {model_name} version {model_version.version} registered successfully.")
+        logger.debug(f"Model {model_name} version {model_version.version} registered and aliased successfully.")
+
     except Exception as e:
         logger.error("Error during model registration: %s", e)
         raise
@@ -96,6 +99,7 @@ def main():
     except Exception as e:
         logger.error('Failed to complete the model registration process: %s', e)
         print(f"Error: {e}")
+
 
 if __name__ == '__main__':
     main()

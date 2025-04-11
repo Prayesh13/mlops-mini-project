@@ -1,5 +1,7 @@
 # updated model evaluation
 
+import mlflow.models
+import mlflow.models.signature
 import numpy as np
 import pandas as pd
 import pickle
@@ -138,8 +140,9 @@ def main():
                 for param_name, param_value in params.items():
                     mlflow.log_param(param_name, param_value)
             
-            # Log model to MLflow
-            mlflow.sklearn.log_model(clf, "model")
+            signature = mlflow.models.signature.infer_signature(X_test, clf.predict(X_test))
+            # Log model with signature
+            mlflow.sklearn.log_model(clf, "model", signature=signature, input_example=X_test[0:1])
             
             # Save model info
             save_model_info(run.info.run_id, "model", 'reports/experiment_info.json')

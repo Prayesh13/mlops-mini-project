@@ -29,14 +29,22 @@ class TestModelLoading(unittest.TestCase):
     @staticmethod
     def get_latest_model_version(model_name: str) -> int:
         """
-        Fetch the version number associated with the 'latest' alias of a registered MLflow model.
+        Fetch the latest model version by alias or fallback to highest version.
         """
         client = mlflow.MlflowClient()
         try:
+            # Try to fetch version using alias
             model_version = client.get_model_version_by_alias(model_name, "latest")
             return int(model_version.version)
         except Exception as e:
-            raise ValueError(f"Failed to fetch model version by alias 'latest': {e}")
+            print(f"Alias 'latest' not found. Falling back to highest version. Details: {e}")
+            # Fallback: Get the latest version manually
+            all_versions = client.search_model_versions(f"name='{model_name}'")
+            if not all_versions:
+                raise ValueError(f"No versions found for model: {model_name}")
+            latest = max(all_versions, key=lambda mv: int(mv.version))
+            return int(latest.version)
+
 
     def test_model_loaded_properly(self):
         """Test if the model loads correctly."""
