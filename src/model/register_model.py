@@ -55,24 +55,35 @@ def load_model_info(file_path: str) -> dict:
 
 
 def register_model(model_name: str, model_info: dict):
-    """Register the model to the MLflow Model Registry."""
+    """Register the model to the MLflow Model Registry using aliases instead of stages."""
     try:
         model_uri = f"runs:/{model_info['run_id']}/{model_info['model_path']}"
-        
+
         # Register the model
         model_version = mlflow.register_model(model_uri, model_name)
-        
-        # Transition the model to "Staging" stage
+
         client = mlflow.tracking.MlflowClient()
-        client.transition_model_version_stage(
-            name=model_name,
-            version=model_version.version,
-            stage="Staging"
-        )
-        
-        logger.debug(f'Model {model_name} version {model_version.version} registered and transitioned to Staging.')
+
+        # Get all versions of the model
+        all_versions = client.search_model_versions(f"name='{model_name}'")
+        all_versions_sorted = sorted(all_versions, key=lambda v: int(v.version), reverse=True)
+
+        latest_version = int(model_version.version)
+        previous_versions = [v for v in all_versions_sorted if int(v.version) < latest_version]
+
+        # Assign alias 'latest' to current version
+        client.set_registered_model_alias(model_name, "latest", latest_version)
+        logger.debug(f"Alias 'latest' set to version {latest_version}")
+
+        # Optionally assign alias 'previous' to the previous version
+        if previous_versions:
+            previous_version = int(previous_versions[0].version)
+            client.set_registered_model_alias(model_name, "previous", previous_version)
+            logger.debug(f"Alias 'previous' set to version {previous_version}")
+
+        logger.debug(f"Model {model_name} version {model_version.version} registered successfully.")
     except Exception as e:
-        logger.error('Error during model registration: %s', e)
+        logger.error("Error during model registration: %s", e)
         raise
 
 
